@@ -45,10 +45,10 @@ $(function () {
         try {
             var json = JSON.parse(message.data);
         } catch (e) {
-            console.log('This doesn\'t look like a valid JSON: ', message.data);
+            console.dir(message);
+        	//console.log('This doesn\'t look like a valid JSON: ', message.data);
             return;
         }
-
         if (json.type === 'color') { // first response from the server with user's color
             myColor = json.data;
             status.text(myName + ': ').css('color', myColor);
@@ -65,8 +65,25 @@ $(function () {
             console.log(json);
             addMessage(json.data.author, json.data.text,
                        json.data.color, new Date(json.data.time),  json.data.score);
-        } else {
-            console.log('Hmm..., I\'ve never seen JSON like this: ', json);
+        }else if (json.type === 'mousemove') {           
+        
+            console.log("it works mofo Y" + json.data.y);
+            console.log("it works mofo Y" + json.data.x);
+	          	if($('#' + json.data.author).length == 0){ 
+	            	$('#gamearea').append('<p id="' + json.data.author + '">X</p>');
+	        	}
+	        	else {
+						$('#' + json.data.author).attr('style', "position:relative;top:" + json.data.y + "px;left:" + json.data.x + "px;color:" + json.data.color  + ";");
+	        	}        
+        	}
+        	else if (json.type === 'boom') {   
+        				alert("boom");
+        		alert("time :" + json.data.time + "\n y :" + json.data.y  + "\n  x :" + json.data.x + "\n author :" + json.data.author + "\n");       
+    
+        }
+        else {
+        //    console.log('Hmm..., I\'ve never seen JSON like this: ', json);
+        		console.dir( message.data);
         }
     };
 
@@ -80,11 +97,7 @@ $(function () {
                 return;
             }
             // send the message as an ordinary text
-            var message = {
-               	message : msg,
-               	typeofsend : 'chat'
-           	}
-            connection.send(msg);
+          connection.send("type:chat;msg:" + msg + ";");
             $(this).val('');
             // disable the input field to make the user wait until server
             // sends back response
@@ -97,16 +110,16 @@ $(function () {
         }
     });
     $("div#gamearea").mousemove( function (e) {
-    	var mouse = e.offsetX;
-//    	mouse.offsetY = e.offsetY;
-       var message = {
-			offsetX : e.offsetX,
-		  	offsetY : e.offsetY,
-          	typeofsend : 'mouse'
-       }
-    	connection.send(message);
+    	var mouse =  "type:mousemove;offsetX:" + e.offsetX + ";offsetY:" + e.offsetY + ";";
+    	connection.send(mouse);
     });
 
+
+    $("div#gamearea").click( function (e) {
+
+    	var mouse =  "type:boom;offsetX:" + e.offsetX + ";offsetY:" + e.offsetY + ";";
+    	connection.send(mouse);
+    });
 
     /**
      * This method is optional. If the server wasn't able to respond to the

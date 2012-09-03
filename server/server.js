@@ -70,10 +70,18 @@ wsServer.on('request', function(request) {
 
     // user sent some message
     connection.on('message', function(message) {
+		//console.log(message);
+		var object = {};
+		var n = message.utf8Data.split(";")
+		for (i=0; i < (n.length - 1); i = i + 1) {
+			  var split = n[i].split(":");	
+			 object[split[0]] =  split[1]; 
+		 }
+		console.log(object.type);
         if (message.type === 'utf8') { // accept only text
             if (userName === false) { // first message sent by user is their name
                 // remember user name
-                userName = htmlEntities(message.utf8Data);
+                userName = htmlEntities(object.msg);
                 // get random color and send it back to the user
                 userColor = colors.shift();
                 connection.sendUTF(JSON.stringify({ type:'color', data: userColor }));
@@ -81,15 +89,16 @@ wsServer.on('request', function(request) {
 
             } else { // log and broadcast the message
                 console.log((new Date()) + ' Received Message from ' + userName + ': ' + message.utf8Data);
-                
                 // we want to keep history of all sent messages
+                if(object.type == "chat") {   
                 var obj = {
                     time: (new Date()).getTime(),
-                    text: htmlEntities(message.utf8Data),
+                    text: htmlEntities(object.msg),
                     author: userName,
                     color: userColor,
                     score : score
                 };
+                
                 history.push(obj);
                 history = history.slice(-100);
 
@@ -98,9 +107,45 @@ wsServer.on('request', function(request) {
                 for (var i=0; i < clients.length; i++) {
                     clients[i].sendUTF(json);
                 }
+              }
+              else if (object.type == "mousemove"){
+              var obj = {
+                    time: (new Date()).getTime(),
+                    y:  object.offsetY,
+                    x: object.offsetX,
+                    author: userName,
+                    color: userColor
+                };
+              	var json = JSON.stringify({ type:'mousemove', data: obj });
+                for (var i=0; i < clients.length; i++) {
+                    clients[i].sendUTF(json);
+                }
+              	
+               }
+               else if (object.type == "boom"){
+              var obj = {
+                    time: (new Date()).getTime(),
+                    y:  object.offsetY,
+                    x: object.offsetX,
+                    author: userName,
+                    color: userColor
+                };
+              	var json = JSON.stringify({ type:'boom', data: obj });
+                for (var i=0; i < clients.length; i++) {
+                    clients[i].sendUTF(json);
+                }
+              	
+               }
             }
         }
     });
+    
+        connection.on('mousemove', function(mousemove){
+	 		console.log("my object: %o", mousemove);
+	    	console.dir(mousemove);
+
+        
+        });
 
     // user disconnected
     connection.on('close', function(connection) {
