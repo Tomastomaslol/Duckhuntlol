@@ -37,6 +37,14 @@ var gameevent = {
         	    clients[i].sendUTF(json);
         	}
     },
+    hittarget: function(shootat){
+    	console.log(shootat);  
+		if(shootat === "target") {
+			return 1;
+		} else {
+			return 0;
+		}
+    },
     boom: function(object){  
     	var json = JSON.stringify({ type:'boom', data: object });
 	        for (var i=0; i < clients.length; i++) {
@@ -117,8 +125,9 @@ wsServer.on('request', function(request) {
 
     // user sent some message
     connection.on('message', function(message) {
-		//console.log(message);
+		console.log(message);
 		var object = datahandlers.messagetoobject(message);
+		console.log(object);
 		console.log(object.type);
         if (message.type === 'utf8') { // accept only text
             if (userName === false) { // first message sent by user is their name
@@ -135,24 +144,27 @@ wsServer.on('request', function(request) {
 					gameevent.chat(object, userName, userColor, score);
              	}
               else if (object.type == "mousemove"){
-              var object = {
+              var obj = {
                     time: (new Date()).getTime(),
                     y:  object.offsetY,
                     x: object.offsetX,
                     author: userName,
                     color: userColor
                 };
-              	gameevent.mousemove(object);
+              	gameevent.mousemove(obj);
                }
                else if (object.type == "boom"){
-              var object = {
+               	console.log(object);
+              var hit = gameevent.hittarget(object.shootat);
+              var obj = {
                     time: (new Date()).getTime(),
                     y:  object.offsetY,
                     x: object.offsetX,
                     author: userName,
-                    color: userColor
+                    color: userColor, 
+                    hit: hit
                 };
-				 	gameevent.boom(object);
+				 	gameevent.boom(obj);
                }
             }
         }

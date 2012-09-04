@@ -62,7 +62,6 @@ $(function () {
             }
         } else if (json.type === 'message') { // it's a single message
             input.removeAttr('disabled'); // let the user write another message
-            console.log(json);
             addMessage(json.data.author, json.data.text,
                        json.data.color, new Date(json.data.time),  json.data.score, json.data.healthpoints, json.data.ammo);
         }else if (json.type === 'mousemove') {           
@@ -72,12 +71,12 @@ $(function () {
 	            	$('#gamearea').append('<p id="' + json.data.author + '">X</p>');
 	        	}
 	        	else {
-						$('#' + json.data.author).attr('style', "position:relative;top:" + json.data.y + "px;left:" + json.data.x + "px;color:" + json.data.color  + ";");
+						$('#' + json.data.author).attr('style', "position:absolute;z-index:1;top:" + json.data.y + "px;left:" + json.data.x + "px;color:" + json.data.color  + ";");
 	        	}        
         	}
         	else if (json.type === 'boom') {   
         				alert("boom");
-        		alert("time :" + json.data.time + "\n y :" + json.data.y  + "\n  x :" + json.data.x + "\n author :" + json.data.author + "\n");       
+        			alert("time :" + json.data.time + "\n y :" + json.data.y  + "\n  x :" + json.data.x + "\n author :" + json.data.author + "\n"  + "\n hit :" + json.data.hit + "\n");       
     
         }
         else {
@@ -115,8 +114,7 @@ $(function () {
 
 
     $("div#gamearea").click( function (e) {
-
-    	var mouse =  "type:boom;offsetX:" + e.offsetX + ";offsetY:" + e.offsetY + ";";
+    	var mouse =  "type:boom;offsetX:" + e.offsetX + ";offsetY:" + e.offsetY + ";shootat:" + e.target.classList[0] + ";";
     	connection.send(mouse);
     });
 
