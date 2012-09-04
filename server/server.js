@@ -119,7 +119,7 @@ wsServer.on('request', function(request) {
     connection.on('message', function(message) {
 		//console.log(message);
 		var object = datahandlers.messagetoobject(message);
-		
+		console.log(object.type);
         if (message.type === 'utf8') { // accept only text
             if (userName === false) { // first message sent by user is their name
                 // remember user name
@@ -152,7 +152,7 @@ wsServer.on('request', function(request) {
                     author: userName,
                     color: userColor
                 };
-				 	gameevent.mousemove(object);
+				 	gameevent.boom(object);
                }
             }
         }
