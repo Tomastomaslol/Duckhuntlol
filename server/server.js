@@ -10,6 +10,41 @@ var datahandlers = {
 		 return object;
     }
 }  
+
+var gameevent = {  
+    chat:function(object, userName, userColor, score){  
+     var obj = {
+         time: (new Date()).getTime(),
+         text: htmlEntities(object.msg),
+         author: userName,
+         color: userColor,
+         score : score,
+         healthpoints : 100,
+         ammo : 6
+     };     
+     history.push(obj);
+     history = history.slice(-100);
+
+     // broadcast message to all connected clients
+     var json = JSON.stringify({ type:'message', data: obj });
+     for (var i=0; i < clients.length; i++) {
+         clients[i].sendUTF(json);
+     }
+    },  
+    mousemove: function(object){  
+    	var json = JSON.stringify({ type:'mousemove', data: object });
+        	for (var i=0; i < clients.length; i++) {
+        	    clients[i].sendUTF(json);
+        	}
+    },
+    boom: function(object){  
+    	var json = JSON.stringify({ type:'boom', data: object });
+	        for (var i=0; i < clients.length; i++) {
+	            clients[i].sendUTF(json);
+	        }
+              	
+    },
+}  
 // http://ejohn.org/blog/ecmascript-5-strict-mode-json-and-more/
 "use strict";
 
@@ -84,12 +119,11 @@ wsServer.on('request', function(request) {
     connection.on('message', function(message) {
 		//console.log(message);
 		var object = datahandlers.messagetoobject(message);
-		console.log(object.type);
+		
         if (message.type === 'utf8') { // accept only text
             if (userName === false) { // first message sent by user is their name
                 // remember user name
                 userName = htmlEntities(object.msg);
-                // get random color and send it back to the user
                 userColor = colors.shift();
                 connection.sendUTF(JSON.stringify({ type:'color', data: userColor }));
 				score = 0;
@@ -98,63 +132,31 @@ wsServer.on('request', function(request) {
             } else { // log and broadcast the message
                 // we want to keep history of all sent messages
                 if(object.type == "chat") {   
-                var obj = {
-                    time: (new Date()).getTime(),
-                    text: htmlEntities(object.msg),
-                    author: userName,
-                    color: userColor,
-                    score : score,
-                    healthpoints : 100,
-                    ammo : 6
-                };
-                
-                history.push(obj);
-                history = history.slice(-100);
-
-                // broadcast message to all connected clients
-                var json = JSON.stringify({ type:'message', data: obj });
-                for (var i=0; i < clients.length; i++) {
-                    clients[i].sendUTF(json);
-                }
-              }
+					gameevent.chat(object, userName, userColor, score);
+             	}
               else if (object.type == "mousemove"){
-              var obj = {
+              var object = {
                     time: (new Date()).getTime(),
                     y:  object.offsetY,
                     x: object.offsetX,
                     author: userName,
                     color: userColor
                 };
-              	var json = JSON.stringify({ type:'mousemove', data: obj });
-                for (var i=0; i < clients.length; i++) {
-                    clients[i].sendUTF(json);
-                }
-              	
+              	gameevent.mousemove(object);
                }
                else if (object.type == "boom"){
-              var obj = {
+              var object = {
                     time: (new Date()).getTime(),
                     y:  object.offsetY,
                     x: object.offsetX,
                     author: userName,
                     color: userColor
                 };
-              	var json = JSON.stringify({ type:'boom', data: obj });
-                for (var i=0; i < clients.length; i++) {
-                    clients[i].sendUTF(json);
-                }
-              	
+				 	gameevent.mousemove(object);
                }
             }
         }
     });
-    
-        connection.on('mousemove', function(mousemove){
-	 		console.log("my object: %o", mousemove);
-	    	console.dir(mousemove);
-
-        
-        });
 
     // user disconnected
     connection.on('close', function(connection) {
