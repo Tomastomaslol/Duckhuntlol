@@ -1,3 +1,15 @@
+var datahandlers = {  
+    messagetoobject:function(message){  
+    	var object = {};
+		var message = message.utf8Data.split(";");
+		for (i=0; i < (message.length - 1); i = i + 1) {
+			  var split = message[i].split(":");	
+			 object[split[0]] =  split[1]; 
+		 }
+		  
+		 return object;
+    }
+}  
 // http://ejohn.org/blog/ecmascript-5-strict-mode-json-and-more/
 "use strict";
 
@@ -71,12 +83,7 @@ wsServer.on('request', function(request) {
     // user sent some message
     connection.on('message', function(message) {
 		//console.log(message);
-		var object = {};
-		var n = message.utf8Data.split(";")
-		for (i=0; i < (n.length - 1); i = i + 1) {
-			  var split = n[i].split(":");	
-			 object[split[0]] =  split[1]; 
-		 }
+		var object = datahandlers.messagetoobject(message);
 		console.log(object.type);
         if (message.type === 'utf8') { // accept only text
             if (userName === false) { // first message sent by user is their name
@@ -87,8 +94,8 @@ wsServer.on('request', function(request) {
                 connection.sendUTF(JSON.stringify({ type:'color', data: userColor }));
 				score = 0;
 
-            } else { // log and broadcast the message
                 console.log((new Date()) + ' Received Message from ' + userName + ': ' + message.utf8Data);
+            } else { // log and broadcast the message
                 // we want to keep history of all sent messages
                 if(object.type == "chat") {   
                 var obj = {
