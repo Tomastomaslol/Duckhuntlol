@@ -57,8 +57,8 @@ $(function () {
         } else if (json.type === 'history') { // entire message history
             // insert every single message to the chat window
             for (var i=0; i < json.data.length; i++) {
-                addMessage(json.data[i].author, json.data[i].text,
-                           json.data[i].color, json.data[i].score);
+            addMessage(json.data.author, json.data.text,
+                       json.data.color, new Date(json.data.time),  json.data.score, json.data.healthpoints, json.data.ammo);
             }
         } else if (json.type === 'message') { // it's a single message
             input.removeAttr('disabled'); // let the user write another message
@@ -75,8 +75,8 @@ $(function () {
 	        	}        
         	}
         	else if (json.type === 'boom') {   
-        				alert("boom");
-        			alert("time :" + json.data.time + "\n y :" + json.data.y  + "\n  x :" + json.data.x + "\n author :" + json.data.author + "\n"  + "\n hit :" + json.data.hit + "\n");       
+        			//	alert("boom");
+        			//alert("time :" + json.data.time + "\n y :" + json.data.y  + "\n  x :" + json.data.x + "\n author :" + json.data.author + "\n"  + "\n hit :" + json.data.hit + "\n");       
     
         }
         else {

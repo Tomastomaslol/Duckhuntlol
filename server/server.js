@@ -5,14 +5,13 @@ var datahandlers = {
 		for (i=0; i < (message.length - 1); i = i + 1) {
 			  var split = message[i].split(":");	
 			 object[split[0]] =  split[1]; 
-		 }
-		  
+		 }		  
 		 return object;
     }
 }  
 
 var gameevent = {  
-    chat:function(object, userName, userColor, score){  
+    chat:function(object, userName, userColor, score, ammo){  
      var obj = {
          time: (new Date()).getTime(),
          text: htmlEntities(object.msg),
@@ -20,7 +19,7 @@ var gameevent = {
          color: userColor,
          score : score,
          healthpoints : 100,
-         ammo : 6
+         ammo : ammo
      };     
      history.push(obj);
      history = history.slice(-100);
@@ -38,7 +37,7 @@ var gameevent = {
         	}
     },
     hittarget: function(shootat){
-    	console.log(shootat);  
+     	 
 		if(shootat === "target") {
 			return 1;
 		} else {
@@ -53,6 +52,7 @@ var gameevent = {
               	
     },
 }  
+
 // http://ejohn.org/blog/ecmascript-5-strict-mode-json-and-more/
 "use strict";
 
@@ -91,7 +91,7 @@ colors.sort(function(a,b) { return Math.random() > 0.5; } );
  * HTTP server
  */
 var server = http.createServer(function(request, response) {
-    // Not important for us. We're writing WebSocket server, not HTTP server
+
 });
 server.listen(webSocketsServerPort, function() {
     console.log((new Date()) + " Server is listening on port " + webSocketsServerPort);
@@ -113,58 +113,64 @@ wsServer.on('request', function(request) {
     
     // we need to know client index to remove them on 'close' event
     var index = clients.push(connection) - 1;
-    var userName = false;
-    var userColor = false;
-	var score = null;
-    console.log((new Date()) + ' Connection accepted.');
 
+    var users = {  		
+		    i : index,
+    		userName : false,
+		    userColor : false,
+			score : 0,
+			hp : 100,
+			ammo : 6
+		};
+    console.log((new Date()) + ' Connection accepted.');
     // send back chat history
+
     if (history.length > 0) {
         connection.sendUTF(JSON.stringify( { type: 'history', data: history} ));
     }
 
     // user sent some message
     connection.on('message', function(message) {
-		console.log(message);
 		var object = datahandlers.messagetoobject(message);
-		console.log(object);
-		console.log(object.type);
+
         if (message.type === 'utf8') { // accept only text
-            if (userName === false) { // first message sent by user is their name
+            if (users.userName === false) { // first message sent by user is their name
                 // remember user name
-                userName = htmlEntities(object.msg);
+                users.userName = htmlEntities(object.msg);
                 userColor = colors.shift();
                 connection.sendUTF(JSON.stringify({ type:'color', data: userColor }));
-				score = 0;
-
-                console.log((new Date()) + ' Received Message from ' + userName + ': ' + message.utf8Data);
+                
+                console.log((new Date()) + ' Received Message from ' + users.userName + ': ' + message.utf8Data);
             } else { // log and broadcast the message
                 // we want to keep history of all sent messages
                 if(object.type == "chat") {   
-					gameevent.chat(object, userName, userColor, score);
+					gameevent.chat(object, users.userName, users.userColor, users.score, users.ammo);
              	}
               else if (object.type == "mousemove"){
               var obj = {
                     time: (new Date()).getTime(),
                     y:  object.offsetY,
                     x: object.offsetX,
-                    author: userName,
+                    author: users.userName,
                     color: userColor
                 };
               	gameevent.mousemove(obj);
                }
                else if (object.type == "boom"){
-               	console.log(object);
-              var hit = gameevent.hittarget(object.shootat);
-              var obj = {
-                    time: (new Date()).getTime(),
-                    y:  object.offsetY,
-                    x: object.offsetX,
-                    author: userName,
-                    color: userColor, 
-                    hit: hit
-                };
-				 	gameevent.boom(obj);
+              var points = gameevent.hittarget(object.shootat);
+              users.score = points + users.score;
+			  users.ammo--;
+			  console.log(users.ammo);
+		              var obj = {
+		                    time: (new Date()).getTime(),
+		                    y:  object.offsetY,
+		                    x: object.offsetX,
+		                    author: users.userName,
+		                    color: users.userColor, 
+		                    hit: points
+		                };
+               	  gameevent.boom(obj);
+
                }
             }
         }
@@ -172,7 +178,7 @@ wsServer.on('request', function(request) {
 
     // user disconnected
     connection.on('close', function(connection) {
-        if (userName !== false && userColor !== false) {
+        if (users.userName !== false && users.userColor !== false) {
             console.log((new Date()) + " Peer "
                 + connection.remoteAddress + " disconnected.");
             // remove user from the list of connected clients
