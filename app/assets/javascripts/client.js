@@ -137,6 +137,6 @@ $(function () {
      * Add message to the chat window
      */
     function addMessage(author, message, color, dt, score, hp, ammo) {
-        content.append('<p><span style="color:' + color + '">' + author + ' : </span>' + message + '</p>  <p>score : ' + hp + '</p> <p>ammo : ' + ammo + '</p>');
+        content.append('<p><span style="color:' + color + '">' + author + ' : </span>' + message + '</p>  <p>score : ' + score + '</p> <p>hp : ' + hp + '</p> <p>ammo : ' + ammo + '</p>');
     }
 });
