@@ -64,11 +64,10 @@ $(function () {
             input.removeAttr('disabled'); // let the user write another message
             console.log(json);
             addMessage(json.data.author, json.data.text,
-                       json.data.color, new Date(json.data.time),  json.data.score);
+                       json.data.color, new Date(json.data.time),  json.data.score, json.data.healthpoints, json.data.ammo);
         }else if (json.type === 'mousemove') {           
         
-            console.log("it works mofo Y" + json.data.y);
-            console.log("it works mofo Y" + json.data.x);
+
 	          	if($('#' + json.data.author).length == 0){ 
 	            	$('#gamearea').append('<p id="' + json.data.author + '">X</p>');
 	        	}
@@ -137,7 +136,7 @@ $(function () {
     /**
      * Add message to the chat window
      */
-    function addMessage(author, message, color, dt, score) {
-        content.append('<p><span style="color:' + color + '">' + author + ' : </span>' + message + '</p>  <p>score : ' + score + '</p>');
+    function addMessage(author, message, color, dt, score, hp, ammo) {
+        content.append('<p><span style="color:' + color + '">' + author + ' : </span>' + message + '</p>  <p>score : ' + hp + '</p> <p>ammo : ' + ammo + '</p>');
     }
 });

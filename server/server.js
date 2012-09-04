@@ -96,7 +96,9 @@ wsServer.on('request', function(request) {
                     text: htmlEntities(object.msg),
                     author: userName,
                     color: userColor,
-                    score : score
+                    score : score,
+                    healthpoints : 100,
+                    ammo : 6
                 };
                 
                 history.push(obj);
