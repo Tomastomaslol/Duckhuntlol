@@ -48,9 +48,11 @@ var gameevent = {
     	var json = JSON.stringify({ type:'boom', data: object });
 	        for (var i=0; i < clients.length; i++) {
 	            clients[i].sendUTF(json);
-	        }
-              	
+	        }        	
     },
+    reload: function(){  
+			return 6;	
+    }  
 }  
 
 // http://ejohn.org/blog/ecmascript-5-strict-mode-json-and-more/
@@ -113,7 +115,6 @@ wsServer.on('request', function(request) {
     
     // we need to know client index to remove them on 'close' event
     var index = clients.push(connection) - 1;
-
     var users = {  		
 		    i : index,
     		userName : false,
@@ -132,15 +133,26 @@ wsServer.on('request', function(request) {
     // user sent some message
     connection.on('message', function(message) {
 		var object = datahandlers.messagetoobject(message);
-
+		console.log(object);
         if (message.type === 'utf8') { // accept only text
             if (users.userName === false) { // first message sent by user is their name
                 // remember user name
                 users.userName = htmlEntities(object.msg);
                 userColor = colors.shift();
                 connection.sendUTF(JSON.stringify({ type:'color', data: userColor }));
-                
-                console.log((new Date()) + ' Received Message from ' + users.userName + ': ' + message.utf8Data);
+                var obj = {
+		                    time: (new Date()).getTime(),
+		                    y:  object.offsetY,
+		                    x: object.offsetX,
+		                    author: users.userName,
+		                    color: users.userColor, 
+		                    score: users.score,
+		                    hp : users.hp,
+							ammo : users.ammo	                    
+
+		            };
+               	  gameevent.boom(obj);
+
             } else { // log and broadcast the message
                 // we want to keep history of all sent messages
                 if(object.type == "chat") {   
@@ -157,21 +169,32 @@ wsServer.on('request', function(request) {
               	gameevent.mousemove(obj);
                }
                else if (object.type == "boom"){
-              var points = gameevent.hittarget(object.shootat);
-              users.score = points + users.score;
-			  users.ammo--;
-			  console.log(users.ammo);
-		              var obj = {
-		                    time: (new Date()).getTime(),
-		                    y:  object.offsetY,
-		                    x: object.offsetX,
-		                    author: users.userName,
-		                    color: users.userColor, 
-		                    hit: points
-		                };
-               	  gameevent.boom(obj);
-
+	              var hit = gameevent.hittarget(object.shootat);
+	              if (hit == 1) {
+	              	users.score++;
+	              }
+				  users.ammo--;
+				  console.log(users.ammo);
+			              var obj = {
+			                    time: (new Date()).getTime(),
+			                    y:  object.offsetY,
+			                    x: object.offsetX,
+			                    author: users.userName,
+			                    color: users.userColor, 
+			                    score: 	users.score,
+			                    hp : users.hp,
+								ammo : users.ammo	                    
+	
+			            };
+			      
+			              if(users.ammo >= 0){
+	               		  	gameevent.boom(obj);
+						}
                }
+               else if (object.type == "reload"){
+               	 	users.ammo = gameevent.reload();
+               	 	console.log(users.ammo);
+           		}
             }
         }
     });

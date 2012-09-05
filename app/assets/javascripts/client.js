@@ -57,13 +57,11 @@ $(function () {
         } else if (json.type === 'history') { // entire message history
             // insert every single message to the chat window
             for (var i=0; i < json.data.length; i++) {
-            addMessage(json.data.author, json.data.text,
-                       json.data.color, new Date(json.data.time),  json.data.score, json.data.healthpoints, json.data.ammo);
+            addMessage(json.data.author, json.data.text, json.data.color, new Date(json.data.time));
             }
         } else if (json.type === 'message') { // it's a single message
             input.removeAttr('disabled'); // let the user write another message
-            addMessage(json.data.author, json.data.text,
-                       json.data.color, new Date(json.data.time),  json.data.score, json.data.healthpoints, json.data.ammo);
+             addMessage(json.data.author, json.data.text, json.data.color, new Date(json.data.time));
         }else if (json.type === 'mousemove') {           
         
 
@@ -75,9 +73,11 @@ $(function () {
 	        	}        
         	}
         	else if (json.type === 'boom') {   
+        			$('#hp').html('Hp : ' + json.data.hp);
+        			$('#ammo').html('Ammo : ' + json.data.ammo);       
+        			$('#score').html('Score : ' + json.data.score);     
         			//	alert("boom");
-        			//alert("time :" + json.data.time + "\n y :" + json.data.y  + "\n  x :" + json.data.x + "\n author :" + json.data.author + "\n"  + "\n hit :" + json.data.hit + "\n");       
-    
+        			//alert("time :" + json.data.time + "\n y :" + json.data.y  + "\n  x :" + json.data.x + "\n author :" + json.data.author + "\n"  + "\n hit :" + json.data.hit + "\n");  
         }
         else {
         //    console.log('Hmm..., I\'ve never seen JSON like this: ', json);
@@ -114,9 +114,17 @@ $(function () {
 
 
     $("div#gamearea").click( function (e) {
-    	var mouse =  "type:boom;offsetX:" + e.offsetX + ";offsetY:" + e.offsetY + ";shootat:" + e.target.classList[0] + ";";
-    	connection.send(mouse);
+    	if(myName != false) {
+	    	var mouse =  "type:boom;offsetX:" + e.offsetX + ";offsetY:" + e.offsetY + ";shootat:" + e.target.classList[0] + ";";
+	    	connection.send(mouse);
+    	}
     });
+    
+    //function reload() {
+    //	var reload = "type:reload;reloadstatus:true;";
+  	//	connection.send(reload);
+	// }    
+
 
     /**
      * This method is optional. If the server wasn't able to respond to the
@@ -134,7 +142,8 @@ $(function () {
     /**
      * Add message to the chat window
      */
-    function addMessage(author, message, color, dt, score, hp, ammo) {
-        content.append('<p><span style="color:' + color + '">' + author + ' : </span>' + message + '</p>  <p>score : ' + score + '</p> <p>hp : ' + hp + '</p> <p>ammo : ' + ammo + '</p>');
+    function addMessage(author, message, color, dt) {
+        content.append('<p><span style="color:' + color + '">' + author + ' : </span>' + message + '</p>');
     }
+    
 });
