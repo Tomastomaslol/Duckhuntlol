@@ -51,7 +51,15 @@ var gameevent = {
 	        }        	
     },
     reload: function(){  
-			return 6;	
+    		var clipsize = 6;
+			return clipsize;
+			var obj = {
+				ammo : users.ammo	                   
+		    };	
+			var json = JSON.stringify({ type:'reloaded', data: obj});
+			for (var i=0; i < clients.length; i++) {
+	            clients[i].sendUTF(json);
+	        }    
     }  
 }  
 
@@ -193,7 +201,7 @@ wsServer.on('request', function(request) {
                }
                else if (object.type == "reload"){
                	 	users.ammo = gameevent.reload();
-               	 	console.log(users.ammo);
+
            		}
             }
         }

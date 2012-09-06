@@ -26,7 +26,7 @@ $(function () {
     }
 
     // open connection
-    var connection = new WebSocket('ws://127.0.0.1:1337');
+    var connection = new WebSocket('ws://192.168.1.53:1337');
 
     connection.onopen = function () {
         // first we want users to enter their names
@@ -63,21 +63,24 @@ $(function () {
             input.removeAttr('disabled'); // let the user write another message
              addMessage(json.data.author, json.data.text, json.data.color, new Date(json.data.time));
         }else if (json.type === 'mousemove') {           
-        
-
+        		
 	          	if($('#' + json.data.author).length == 0){ 
 	            	$('#gamearea').append('<p id="' + json.data.author + '">X</p>');
 	        	}
 	        	else {
 						$('#' + json.data.author).attr('style', "position:absolute;z-index:1;top:" + json.data.y + "px;left:" + json.data.x + "px;color:" + json.data.color  + ";");
-	        	}        
+	        	}  
+	    
         	}
         	else if (json.type === 'boom') {   
         			$('#hp').html('Hp : ' + json.data.hp);
         			$('#ammo').html('Ammo : ' + json.data.ammo);       
         			$('#score').html('Score : ' + json.data.score);     
-        			//	alert("boom");
-        			//alert("time :" + json.data.time + "\n y :" + json.data.y  + "\n  x :" + json.data.x + "\n author :" + json.data.author + "\n"  + "\n hit :" + json.data.hit + "\n");  
+  
+        }
+        else if (json.type === 'reloaded') {   
+        			console.log(json.data);
+        			$('#ammo').html('Ammo : ' + json.data.ammo);      
         }
         else {
         //    console.log('Hmm..., I\'ve never seen JSON like this: ', json);
@@ -108,8 +111,10 @@ $(function () {
         }
     });
     $("div#gamearea").mousemove( function (e) {
-    	var mouse =  "type:mousemove;offsetX:" + e.offsetX + ";offsetY:" + e.offsetY + ";";
-    	connection.send(mouse);
+    	if (myName != false) {
+	    	var mouse =  "type:mousemove;offsetX:" + e.offsetX + ";offsetY:" + e.offsetY + ";";
+	    	connection.send(mouse);
+		}
     });
 
 
@@ -119,12 +124,10 @@ $(function () {
 	    	connection.send(mouse);
     	}
     });
-    
-    //function reload() {
-    //	var reload = "type:reload;reloadstatus:true;";
-  	//	connection.send(reload);
-	// }    
-
+    $("span#reload").click( function (e) {
+ 		   	var reload = "type:reload;reloadstatus:true;";
+  			connection.send(reload);
+    });
 
     /**
      * This method is optional. If the server wasn't able to respond to the
@@ -144,6 +147,7 @@ $(function () {
      */
     function addMessage(author, message, color, dt) {
         content.append('<p><span style="color:' + color + '">' + author + ' : </span>' + message + '</p>');
+        $("#chat").scrollTop($("#chat")[0].scrollHeight);
     }
     
 });
