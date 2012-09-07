@@ -1,6 +1,5 @@
 $(function () {
     "use strict";
-
     // for better performance - to avoid searching in DOM
     var content = $('#content');
     var input = $('#input');
@@ -49,6 +48,7 @@ $(function () {
         	//console.log('This doesn\'t look like a valid JSON: ', message.data);
             return;
         }
+        			
         if (json.type === 'color') { // first response from the server with user's color
             myColor = json.data;
             status.text(myName + ': ').css('color', myColor);
@@ -81,6 +81,17 @@ $(function () {
         else if (json.type === 'reloaded') {   
         			console.log(json.data);
         			$('#ammo').html('Ammo : ' + json.data.ammo);      
+        }
+        
+        else if (json.type === 'highscore') {   
+        	console.log(json.type);		
+        	console.log(json.data);
+			if($("ul#highscore ." + json.data.author).length === 0){
+        		  $("ul#highscore").append('<li><span class="' + json.data.author + '">' + json.data.author + ' : </span>' + json.data.score + '</li>');
+        	} else {
+        		console.log($("ul#highscore ." + json.data.author));
+        		$("ul#highscore ." + json.data.author).html('<li><span class="' + json.data.author + '">' + json.data.author + ' : </span>' + json.data.score + '</li>');	
+        	}
         }
         else {
         //    console.log('Hmm..., I\'ve never seen JSON like this: ', json);

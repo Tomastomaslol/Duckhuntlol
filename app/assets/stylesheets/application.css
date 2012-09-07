@@ -34,3 +34,9 @@ div#playerinfo {
 	width: 100%;
 	margin-left: 190px;
 }
+
+ul#highscore {
+	position: absolute;
+	right: 0;
+	top: 0;
+}

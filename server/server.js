@@ -1,3 +1,12 @@
+/**
+ * Global variables
+ */
+// latest 100 messages
+var history = [ ];
+// list of currently connected clients (users)
+var clients = [ ];
+
+
 var datahandlers = {  
     messagetoobject:function(message){  
     	var object = {};
@@ -57,9 +66,22 @@ var gameevent = {
 				ammo : users.ammo	                   
 		    };	
 			var json = JSON.stringify({ type:'reloaded', data: obj});
+				for (var i=0; i < clients.length; i++) {
+		            clients[i].sendUTF(json);
+		        }    
+	        },
+		highscore: function(username, score){  
+		 var obj = {		 	
+	         author: username,
+	         score : score
+     	};     
+		var json = JSON.stringify({ type:'highscore', data: obj});
+		
+		console.log(json);
 			for (var i=0; i < clients.length; i++) {
-	            clients[i].sendUTF(json);
-	        }    
+		            clients[i].sendUTF(json);
+		    }  
+		
     }  
 }  
 
@@ -76,13 +98,7 @@ var webSocketsServerPort = 1337;
 var webSocketServer = require('websocket').server;
 var http = require('http');
 
-/**
- * Global variables
- */
-// latest 100 messages
-var history = [ ];
-// list of currently connected clients (users)
-var clients = [ ];
+
 
 /**
  * Helper function for escaping input strings
@@ -141,7 +157,6 @@ wsServer.on('request', function(request) {
     // user sent some message
     connection.on('message', function(message) {
 		var object = datahandlers.messagetoobject(message);
-		console.log(object);
         if (message.type === 'utf8') { // accept only text
             if (users.userName === false) { // first message sent by user is their name
                 // remember user name
@@ -182,7 +197,6 @@ wsServer.on('request', function(request) {
 	              	users.score++;
 	              }
 				  users.ammo--;
-				  console.log(users.ammo);
 			              var obj = {
 			                    time: (new Date()).getTime(),
 			                    y:  object.offsetY,
@@ -198,6 +212,7 @@ wsServer.on('request', function(request) {
 			              if(users.ammo >= 0){
 	               		  	gameevent.boom(obj);
 						}
+						gameevent.highscore(users.userName, users.score);
                }
                else if (object.type == "reload"){
                	 	users.ammo = gameevent.reload();
